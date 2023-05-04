@@ -1,3 +1,8 @@
+# ROSWS
+build/
+install/
+log/
+
 # Prerequisites
 *.d
 

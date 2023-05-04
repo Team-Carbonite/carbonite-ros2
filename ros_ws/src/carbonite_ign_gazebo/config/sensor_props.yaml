@@ -1,0 +1,9 @@
+carbonite_camera_rate: 10
+carbonite_lidar_rate: 30
+carbonite_gyro_rate: 60
+
+carbonite_lidar_angle: 105
+carbonite_lidar_resolution: 180
+rear_lidar_activate: 1
+
+carbonite_camera_angle: 45

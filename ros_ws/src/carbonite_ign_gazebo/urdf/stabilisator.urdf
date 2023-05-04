@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-1-g15f4949  Build Version: 1.6.7594.29634
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot>
+
+  <material name="light_gray">
+    <color rgba="0.9 0.9 0.9 1"/>
+  </material>
+  <material name="lidar">
+    <color rgba="1.0 0.0 0.0 1.0"/>
+  </material>
+
+
+  <link name="stabilizer_link">
+    <inertial>
+      <origin
+        xyz="-0.14488 -0.00081362 0.096455"
+        rpy="0 0 0" />
+      <mass value="0.55744" />
+      <inertia
+        ixx="0.0025436"
+        ixy="3.3679E-19"
+        ixz="0.00016829"
+        iyy="0.0057994"
+        iyz="-1.5964E-20"
+        izz="0.0076098" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://karbonite_gazebo/meshes/stabilizer.STL" />
+      </geometry>
+      <material name="light_gray" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://karbonite_gazebo/meshes/stabilizer.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="stabilizer_joint"  type="fixed">
+    <origin xyz="-0.1152 0.0 0.45" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="stabilizer_link"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+
+
+  <link name="stabilizer_sub1_link">
+    <inertial>
+      <origin
+        xyz="0 -2.7756E-17 -8.745E-05"
+        rpy="0 0 0" />
+      <mass value="0.11749" />
+      <inertia
+        ixx="0.00027121"
+        ixy="3.3556E-20"
+        ixz="-2.5411E-21"
+        iyy="0.00028373"
+        iyz="-1.5669E-20"
+        izz="0.00054787" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://karbonite_gazebo/meshes/stabilizer_sub1_link.STL" />
+      </geometry>
+      <material name="light_gray" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://karbonite_gazebo/meshes/stabilizer_sub1_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="stabilizer_sub1_joint" type="revolute">
+    <origin
+      xyz="-0.10944 0 0.11425"
+      rpy="0 0 0" />
+    <parent link="stabilizer_link" />
+    <child link="stabilizer_sub1_link" />
+    <axis xyz="1 0 0" />
+    <limit
+      lower="-1.57080"
+      upper="1.57080"
+      effort="0"
+      velocity="0" />
+    <dynamics damping="0.3" />
+  </joint>
+
+
+  <link name="stabilizer_sub2_link">
+    <inertial>
+      <origin
+        xyz="9.7145E-17 0 -0.13435"
+        rpy="0 0 0" />
+      <mass value="0.41896" />
+      <inertia
+        ixx="0.00012075"
+        ixy="-1.7475E-21"
+        ixz="4.2352E-21"
+        iyy="0.00011615"
+        iyz="2.7026E-22"
+        izz="0.00015612" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://karbonite_gazebo/meshes/stabilizer_sub2_link.STL" />
+      </geometry>
+      <material name="light_gray" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://karbonite_gazebo/meshes/stabilizer_sub2_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="stabilizer_sub2_joint" type="revolute">
+    <origin xyz="0 0 0.00475" rpy="0 0 0" />
+    <parent link="stabilizer_sub1_link" />
+    <child link="stabilizer_sub2_link" />
+    <axis xyz="0 1 0" />
+    <limit
+      lower="-1.57080"
+      upper="1.57080"
+      effort="0"
+      velocity="0" />
+    <dynamics damping="0.3" />
+  </joint>
+
+
+  <link name="top_lidar_link">
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.025" length="0.12"/>
+      </geometry>
+      <material name="lidar" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.025" length="0.12"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="top_lidar_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.0695" rpy="0.0 0.0 0.0"/>
+    <parent link="stabilizer_sub2_link"/>
+    <child link="top_lidar_link"/>
+  </joint>
+
+
+  <link name="top_lidar_sensor_link">
+  </link>
+
+  <joint name="top_lidar_sensor_link" type="fixed">
+    <origin xyz="0.0 0.0 0.055" rpy="0.0 0.0 0.0"/>
+    <parent link="top_lidar_link"/>
+    <child link="top_lidar_sensor_link"/>
+  </joint>
+
+
+  <gazebo reference="top_lidar_sensor_link">
+    <sensor type="gpu_ray" name="top_lidar_sensor_link">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>3200</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.141592654</min_angle>
+            <max_angle>3.141592654</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.05</min>
+          <max>30.0</max>
+          <resolution>0.02</resolution>
+        </range>
+      </ray>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.001</stddev>
+      </noise>
+      <plugin name="gazebo_ros_laser_controller" filename="libgazebo_ros_gpu_laser.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0</updateRate>
+        <topicName>/karbonite/top/scan</topicName>
+        <frameName>top_lidar_sensor_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="top_lidar_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+</robot>
