@@ -1,0 +1,39 @@
+karbonite_gazebo:
+  # Publish all joint states -------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50
+
+  # Position Controllers -----------------------------------
+  servo_rear_right_controller:
+    type: effort_controllers/JointPositionController
+    joint: servo_rear_right_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  servo_rear_left_controller:
+    type: effort_controllers/JointPositionController
+    joint: servo_rear_left_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  servo_front_left_controller:
+    type: effort_controllers/JointPositionController
+    joint: servo_front_left_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  servo_front_right_controller:
+    type: effort_controllers/JointPositionController
+    joint: servo_front_right_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  wheel_controller:
+    type: velocity_controllers/JointGroupVelocityController
+    joints:
+      - wheel_rear_right_joint
+      - wheel_rear_left_joint
+      - wheel_front_left_joint
+      - wheel_front_right_joint
+    gains:
+      wheel_rear_right_joint: {p: 100.0, i: 0.01, d: 10.0}
+      wheel_rear_left_joint: {p: 100.0, i: 0.01, d: 10.0}
+      wheel_front_left_joint: {p: 100.0, i: 0.01, d: 10.0}
+      wheel_front_right_joint: {p: 100.0, i: 0.01, d: 10.0}

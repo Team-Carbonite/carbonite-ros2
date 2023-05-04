@@ -1,0 +1,12 @@
+controller_joint_names:
+['',
+'servo_rear_right_joint',
+'wheel_rear_right_joint',
+'servo_rear_left_joint',
+'wheel_rear_left_joint',
+'servo_front_left_joint',
+'wheel_front_left_joint',
+'servo_front_right_joint',
+'wheel_front_right_joint',
+'stabilizer_sub1_joint',
+'stabilizer_sub2_joint',]

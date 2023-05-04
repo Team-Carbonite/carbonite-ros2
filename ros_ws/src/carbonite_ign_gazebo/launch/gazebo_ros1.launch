@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- Arguments you can pass to the launch file --> 
+    <arg name="competition" default="false" />
+
+    <arg name="world_path"/>
+    <arg name="world_name"/>
+    <arg name="world_default" default="false"/>
+    <arg name="gui" default="true"/>
+
+    <arg name="manual_spawn" default="false"/>
+    <arg name="spawn_x" default="0.0"/>
+    <arg name="spawn_y" default="0.0"/>
+
+    <!-- Launches Gazebo unless we have competition argument is true -->
+    <group unless="$(arg competition)">
+        <!-- Launch Gazebo with the specified world --> 
+        <include file="$(find virtual_maize_field)/launch/simulation.launch" unless="$(arg world_default)">
+            <arg name="gui" value="$(arg gui)"/>
+        </include>
+    
+        <include file="$(find gazebo_ros)/launch/empty_world.launch" if="$(arg world_default)">
+            <arg name="gui" value="$(arg gui)" />
+        </include>
+    </group>
+
+    <!-- Loads the URDF model with xacro -->
+    <param name="robot_description" command="$(find xacro)/xacro $(find karbonite_gazebo)/urdf/carbonite.urdf.xacro" />
+
+
+    <!-- Load joint limits configurations from YAML file to parameter server -->
+    <rosparam command="load" file="$(find karbonite_gazebo)/config/carbonite_joint_limits.yaml" />
+
+
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam command="load" file="$(find karbonite_gazebo)/config/carbonite_control.yaml" />
+
+    <node name="carbonite_controller_spawner" pkg="controller_manager" type="spawner"
+        output="screen" ns="/karbonite_gazebo" respawn="false"
+        args="  joint_state_controller
+                servo_rear_right_controller
+                servo_rear_left_controller
+                servo_front_left_controller
+                servo_front_right_controller
+                wheel_controller" />
+
+
+    <!-- Robot Spawner -->
+    <include file="$(find virtual_maize_field)/launch/robot_spawner.launch" unless="$(arg manual_spawn)">
+        <arg name="robot_name" value="carbonite" />
+    </include>
+
+    <node name="spawn_model" pkg="gazebo_ros" type="spawn_model"
+        args=" -param robot_description -urdf -model carbonite -x $(arg spawn_x) -y $(arg spawn_y)  -z 0.450000 -R 0 -P 0 -Y 1.571217"
+        output="screen" if="$(arg manual_spawn)"/>
+
+
+    <!-- Feedback -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+</launch>

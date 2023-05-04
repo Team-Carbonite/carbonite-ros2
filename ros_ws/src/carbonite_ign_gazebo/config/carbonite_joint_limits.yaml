@@ -1,0 +1,33 @@
+joint_limits:
+  wheel_rear_right_joint:
+    has_position_limits: false
+    has_velocity_limits: true
+    max_velocity: 23.5294
+    has_acceleration_limits: true
+    max_acceleration: 235.294117647
+    has_jerk_limits: false
+    has_effort_limits: false
+  wheel_rear_left_joint:
+    has_position_limits: false
+    has_velocity_limits: true
+    max_velocity: 23.5294
+    has_acceleration_limits: true
+    max_acceleration: 235.294117647
+    has_jerk_limits: false
+    has_effort_limits: false
+  wheel_front_left_joint:
+    has_position_limits: false
+    has_velocity_limits: true
+    max_velocity: 23.5294
+    has_acceleration_limits: true
+    max_acceleration: 235.294117647
+    has_jerk_limits: false
+    has_effort_limits: false
+  wheel_front_right_joint:
+    has_position_limits: false
+    has_velocity_limits: true
+    max_velocity: 23.5294
+    has_acceleration_limits: true
+    max_acceleration: 235.294117647
+    has_jerk_limits: false
+    has_effort_limits: false
