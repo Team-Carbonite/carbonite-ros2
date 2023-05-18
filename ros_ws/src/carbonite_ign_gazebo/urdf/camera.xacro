@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="carbonite" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <link name="camera_mount_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <mass value="0" />
+        <inertia
+            ixz="0" ixy="0" ixx="0"
+            iyz="0" iyy="0"
+            izz="0" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/camera_mount_link.STL" />
+        </geometry>
+        <material name="robot" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/camera_mount_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="camera_mount_joint" type="fixed">
+      <origin xyz="-0.1152 0.02575 0.35075" rpy="0 0 0" />
+      <parent link="base_link" />
+      <child link="camera_mount_link" />
+      <axis xyz="0 0 0" />
+    </joint>
+
+    <link name="camera_link">
+      <inertial>
+        <origin xyz="0.058175 -0.0091892 0.039128" rpy="0 0 0" />
+        <mass value="0.20617" />
+        <inertia
+          ixz="6.1920E-07" ixy="4.4111E-06" ixx="6.2228E-05"
+          iyz="7.5384E-08" iyy="1.0011E-04"
+          izz="9.8254E-05" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/camera_link.STL" />
+        </geometry>
+        <material name="camera" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/camera_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="camera_joint" type="fixed">
+      <origin xyz="0 -0.025692 0.12659" rpy="0 ${carbonite_camera_angle} 0" />
+      <parent link="camera_mount_link" />
+      <child link="camera_link" />
+      <axis xyz="0 0 0" />
+    </joint>
+
+    <link name="camera_sensor_link">
+    </link>
+
+    <joint name="camera_sensor_joint" type="fixed">
+      <origin xyz="0.05 0 0.05" rpy="0 0 0" />
+      <parent link="camera_link" />
+      <child link="camera_sensor_link" />
+      <axis xyz="0 0 0" />
+    </joint>
+
+</robot>

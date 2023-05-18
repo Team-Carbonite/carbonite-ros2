@@ -1,0 +1,183 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Plugin for interaction with gazebo -->
+    <gazebo>
+        <plugin filename="libign_ros2_control-system.so" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+            <robot_param>robot_description</robot_param>
+            <robot_param_node>robot_state_publisher</robot_param_node>
+            <parameters>$(find ign_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
+        </plugin>
+    </gazebo>
+
+
+    <!-- Defines the sensors of robot -->
+    <gazebo reference="camera_sensor_link">
+        <sensor type="camera" name="jaigo">
+            <update_rate>${carbonite_camera_rate}</update_rate>
+            <camera name="jaigo">
+            <horizontal_fov>1.3962634</horizontal_fov>
+            <image>
+                <width>800</width>
+                <height>800</height>
+                <format>R8G8B8</format>
+            </image>
+            <clip>
+                <near>0.02</near>
+                <far>300</far>
+            </clip>
+            <noise>
+                <type>gaussian</type>
+                <mean>0.0</mean>
+                <stddev>0.007</stddev>
+            </noise>
+            </camera>
+            <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>0</updateRate>
+            <cameraName>karbonite/jaigo</cameraName>
+            <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <frameName>camera_sensor_link</frameName>
+            <hackBaseline>0.07</hackBaseline>
+            <distortionK1>0.0</distortionK1>
+            <distortionK2>0.0</distortionK2>
+            <distortionK3>0.0</distortionK3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+    <gazebo reference="${front_scan_name}">
+        <sensor type="gpu_ray" name="${front_scan_name}">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>false</visualize>
+            <update_rate>${carbonite_lidar_rate}</update_rate>
+            <ray>
+            <scan>
+                <horizontal>
+                <samples>${carbonite_lidar_resolution}</samples>
+                <resolution>1</resolution>
+                <min_angle>-${carbonite_lidar_angle}</min_angle>
+                <max_angle>${carbonite_lidar_angle}</max_angle>
+                </horizontal>
+            </scan>
+            <range>
+                <min>0.1</min>
+                <max>30.0</max>
+                <resolution>0.01</resolution>
+            </range>
+            </ray>
+            <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.001</stddev>
+            </noise>
+            <plugin name="gazebo_ros_laser_controller" filename="libgazebo_ros_gpu_laser.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>0</updateRate>
+            <topicName>/karbonite/front/scan</topicName>
+            <frameName>${front_scan_name}</frameName>
+            </plugin>
+        </sensor>
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+
+    <xacro:if value="${rear_lidar_activate == 1}">
+        <gazebo reference="${rear_scan_name}">
+            <sensor type="gpu_ray" name="${rear_scan_name}">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>false</visualize>
+            <update_rate>${carbonite_lidar_rate}</update_rate>
+            <ray>
+                <scan>
+                <horizontal>
+                    <samples>${carbonite_lidar_resolution}</samples>
+                    <resolution>1</resolution>
+                    <min_angle>-${carbonite_lidar_angle}</min_angle>
+                    <max_angle>${carbonite_lidar_angle}</max_angle>
+                </horizontal>
+                </scan>
+                <range>
+                <min>0.1</min>
+                <max>30.0</max>
+                <resolution>0.01</resolution>
+                </range>
+            </ray>
+            <noise>
+                <type>gaussian</type>
+                <mean>0.0</mean>
+                <stddev>0.001</stddev>
+            </noise>
+            <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_gpu_laser.so">
+                <alwaysOn>true</alwaysOn>
+                <updateRate>0</updateRate>
+                <topicName>/karbonite/rear/scan</topicName>
+                <frameName>${rear_scan_name}</frameName>
+            </plugin>
+            </sensor>
+            <material>Gazebo/Red</material>
+        </gazebo>
+    </xacro:if>
+
+    <gazebo>
+        <plugin name="imu_controller" filename="libhector_gazebo_ros_imu.so">
+            <updateRate>${carbonite_gyro_rate}</updateRate>
+            <bodyName>gyro_link</bodyName>
+            <topicName>/karbonite/gyro_yaw_topic</topicName>
+            <accelDrift>0.005 0.005 0.005</accelDrift>
+            <accelGaussianNoise>0.005 0.005 0.005</accelGaussianNoise>
+            <rateDrift>0.005 0.005 0.005 </rateDrift>
+            <rateGaussianNoise>0.005 0.005 0.005 </rateGaussianNoise>
+            <headingDrift>0.005</headingDrift>
+            <headingGaussianNoise>0.005</headingGaussianNoise>
+        </plugin>
+    </gazebo>
+
+    <!-- Colour defined for gazebo -->
+    <gazebo reference="camera_link">
+        <material>Gazebo/Green</material>
+    </gazebo>
+    <gazebo reference="base_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+    <gazebo reference="camera_mount_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+    <gazebo reference="servo_rear_right_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+    <gazebo reference="servo_front_right_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+    <gazebo reference="servo_rear_left_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+    <gazebo reference="servo_front_left_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+    <gazebo reference="gyro_link">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+    <!-- Colour and grip on surfaces defined for gazebo -->
+    <xacro:macro name="gazebo_wheel" params="position">
+        <gazebo reference="wheel_${position}_link">
+            <material>Gazebo/Black</material>
+            <!--selfCollide>false</selfCollide>
+            <mu1 value="0.5"/>
+            <mu2 value="0.5"/>
+            <kp value="10000000.0" />
+            <kd value="1" />
+            <fdir1 value="1 0 0"/-->
+            <minDepth value="0.003" />
+        </gazebo>
+    </xacro:macro>
+    <xacro:gazebo_wheel position="rear_right" />
+    <xacro:gazebo_wheel position="front_right" />
+    <xacro:gazebo_wheel position="rear_left" />
+    <xacro:gazebo_wheel position="front_left" />
+
+</robot>

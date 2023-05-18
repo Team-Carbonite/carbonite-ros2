@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:unless value="$(arg use_gazebo)">
+    <ros2_control name="Carbonite" type="system">
+        <hardware>
+            <plugin></plugin>
+            <param></param>
+        </hardware>
+    </xacro:if>
+
+    <xacro:if value="$(arg use_gazebo)">
+    <ros2_control name="DrivingSystem" type="system">
+        <hardware>
+            <plugin>ign_ros2_control/IgnitionSystem</plugin>
+        </hardware>
+    </xacro:if>
+
+        <joint name="servo_rear_right_joint">
+            <command_interface name="position">
+                <param name="min">-1.221730476</param>
+                <param name="max">-1.221730476</param>
+            </command_interface>
+            <state_interface name="effort" />
+            <state_interface name="position" />
+            <state_interface name="velocity" />
+        </joint>
+        <joint name="servo_rear_right_joint">
+            <mimic joint="servo_rear_right_joint" />
+        </joint>
+        <joint name="servo_rear_right_joint">
+            <mimic joint="servo_rear_right_joint" />
+        </joint>
+        <joint name="servo_rear_right_joint">
+            <mimic joint="servo_rear_right_joint" />
+        </joint>
+    </ros2_control>
+
+    <gazebo>
+        <plugin filename="libign_ros2_control-system.so" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+        <robot_param>robot_description</robot_param>
+        <robot_param_node>robot_state_publisher</robot_param_node>
+        <parameters>$(find carbonite_ign_gazebo)/config/carbonite_contoller.yaml</parameters>
+        </plugin>
+    </gazebo>
+
+</robot>

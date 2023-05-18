@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="carbonite" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:arg name="use_ros2_control" default="true">
+    <xacro:arg name="sim_mode" default="false">
+
+    <material name="wheel">
+        <color rgba="0.2 0.2 0.2 1.0"/> 
+    </material>
+    <material name="robot">
+        <color rgba="0.8 0.8 0.8 1"/>
+    </material>
+    <material name="camera">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+    </material>
+    <material name="gyro">
+        <color rgba="0.0 0.0 1.0 1.0"/>
+    </material>
+
+    <!-- General properties -->
+    <xacro:property name="PI" value="3.14159265359" />
+
+    <!-- Loads the properties from accesories_props.yaml and initiates them -->
+    <xacro:property name="yaml_file" value="$(find karbonite_gazebo)/config/sensor_props.yaml" />
+    <xacro:property name="props" value="${load_yaml(yaml_file)}"/>
+    <xacro:property name="carbonite_camera_angle" value="${props['carbonite_camera_angle'] * 0.01745329251}"/>
+
+    <xacro:property name="carbonite_camera_rate" value="${props['carbonite_camera_rate']}"/>
+    <xacro:property name="carbonite_lidar_rate" value="${props['carbonite_lidar_rate']}"/>
+    <xacro:property name="carbonite_gyro_rate" value="${props['carbonite_gyro_rate']}"/>
+    <xacro:property name="carbonite_lidar_angle" value="${pi/180*(props['carbonite_lidar_angle'])}"/>
+    <xacro:property name="carbonite_lidar_resolution" value="${props['carbonite_lidar_resolution']}"/>
+    <xacro:property name="rear_lidar_activate" value="${props['rear_lidar_activate']}"/>
+
+    <xacro:property name="front_scan_name" value="front_scan" />
+    <xacro:property name="rear_scan_name" value="rear_scan" />
+
+    <xacro:macro name="mesh_geometry" params="name">
+        <geometry>
+        <mesh filename="package://karbonite_gazebo/meshes/{name}.STL" />
+        </geometry>
+    </xacro:macro>
+
+    <xacro:macro name="wheel_inertia">
+      <mass value="0.3" />
+      <inertia
+        ixx="0.000631875"
+        ixy="0"
+        ixz="0"
+        iyy="0.00108375"
+        iyz="0.0"
+        izz="0.000631875" />
+    </xacro:macro>
+
+    <!-- Macro for limits of wheel joint -->
+    <xacro:macro name="wheel_limit">
+      <limit effort="20" velocity="23.5294" />
+    </xacro:macro>
+
+    <!-- Macro for limits of servo joint -->
+    <xacro:macro name="servo_limit">
+      <limit lower="-1.221730476" upper="1.221730476" effort="20" velocity="15"/>
+    </xacro:macro>
+
+    <!-- Macro for deterening direction of reflection -->
+    <xacro:macro name="reflection" params="front_rear left_right" >
+        <xacro:if value="${front_rear == 'front'}">
+            <xacro:property name="front_rear_calc" value="-1" />
+        </xacro:if>
+        <xacro:if value="${front_rear == 'rear'}">
+            <xacro:property name="front_rear_calc" value="1" />
+        </xacro:if>
+        <xacro:if value="${left_right == 'left'}">
+            <xacro:property name="left_right_calc" value="-1" />
+        </xacro:if>
+        <xacro:if value="${left_right == 'right'}">
+            <xacro:property name="left_right_calc" value="1" />
+        </xacro:if>
+    </xacro:macro>
+
+    <xacro:macro name="servo_link" params="front_rear left_right">
+        <xacro:property name="servo_name" value="servo_{front_rear}_{left_right}_link" />
+        <link name="{servo_name}">
+        <inertial>
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+            <mass value="0.01" />
+            <inertia
+                ixz="0.00" ixy="0.01" ixx="0.01"
+                iyz="0.00" iyy="0.01"
+                izz="0.00" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <xacro:mash_geomerty name="{servo_name}" />
+            <material name="robot" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <xacro:mash_geomerty name="{servo_name}" />
+        </collision>
+        </link>
+    </xacro:macro>
+
+
+    <!-- Needed to calculate inertia for the base_link -->
+    <link name="base_footprint">
+    </link>
+
+    <!-- Describes robot model -->
+    <link name="base_link">
+      <inertial>
+        <origin
+          xyz="-0.2645 0.0 0.1329"
+          rpy="0 0 0" />
+        <mass value="17" />
+        <inertia
+          ixz="0.00" ixy="0.00" ixx="0.09"
+          iyz="0.00" iyy="0.32"
+          izz="0.16" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/base_link.STL" />
+        </geometry>
+        <material name="robot" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/base_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="dummy_joint" type="fixed">
+      <parent link="base_footprint"/>
+      <child link="base_link"/>
+    </joint>
+
+    <link name="servo_rear_right_link">
+      <inertial>
+        <xacro:servo_inertia />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/servo_rear_right_link.STL" />
+        </geometry>
+        <material name="robot" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/servo_rear_right_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="servo_rear_right_joint" type="revolute">
+      <origin
+        xyz="-0.42331 -0.177 0.11625"
+        rpy="0 0 0" />
+      <parent link="base_link" />
+      <child link="servo_rear_right_link" />
+      <axis xyz="0 0 -1" />
+      <xacro:servo_limit />
+    </joint>
+
+    <link name="wheel_rear_right_link">
+      <inertial>
+        <origin xyz="0 0.03 0" rpy="0 0 0" />
+        <xacro:wheel_inertia />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/wheel_rear_right_link.STL" />
+        </geometry>
+        <material name="wheel" />
+      </visual>
+      <collision>
+        <origin xyz="0 0.035 0" rpy="${PI/2} 0 0" />
+        <geometry>
+          <cylinder radius="0.085" length="0.06"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="wheel_rear_right_joint" type="continuous">
+      <origin xyz="0 -0.0485 -0.03125" rpy="0 0 0" />
+      <parent link="servo_rear_right_link" />
+      <child link="wheel_rear_right_link" />
+      <axis xyz="0 1 0" />
+      <xacro:wheel_limit />
+    </joint>
+
+    <xacro:servo_link front_rear="rear" left_right="left"/>
+
+    <joint name="servo_rear_left_joint" type="revolute">
+      <origin xyz="-0.42331 0.177 0.11625" rpy="0 0 0" />
+      <parent link="base_link" />
+      <child link="servo_rear_left_link" />
+      <axis xyz="0 0 1" />
+      <xacro:servo_limit />
+    </joint>
+
+    <link name="wheel_rear_left_link">
+      <inertial>
+        <origin xyz="0 -0.03 0" rpy="0 0 0" />
+        <xacro:wheel_inertia />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/wheel_rear_left_link.STL" />
+        </geometry>
+        <material name="wheel" />
+      </visual>
+      <collision>
+        <origin xyz="0 -0.035 0" rpy="${PI/2} 0 0" />
+        <geometry>
+          <cylinder radius="0.085" length="0.06"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="wheel_rear_left_joint" type="continuous">
+      <origin xyz="0 0.0485 -0.03125" rpy="0 0 0" />
+      <parent link="servo_rear_left_link" />
+      <child link="wheel_rear_left_link" />
+      <axis xyz="0 1 0" />
+      <xacro:wheel_limit />   
+    </joint>
+
+    <link name="servo_front_left_link">
+      <inertial>
+        <!--origin xyz="-0.001 0.0026 -0.03" rpy="0 0 0" /-->
+        <xacro:servo_inertia />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/servo_front_left_link.STL" />
+        </geometry>
+        <material name="robot" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/servo_front_left_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="servo_front_left_joint" type="revolute">
+      <origin xyz="-0.08581 0.177 0.11625" rpy="0 0 0" />
+      <parent link="base_link" />
+      <child link="servo_front_left_link" />
+      <axis xyz="0 0 -1" />
+      <xacro:servo_limit />
+    </joint>
+
+
+    <link name="wheel_front_left_link">
+      <inertial>
+        <origin xyz="0 -0.03 0" rpy="0 0 0" />
+        <xacro:wheel_inertia />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/wheel_front_left_link.STL" />
+        </geometry>
+        <material name="wheel" />
+      </visual>
+      <collision>
+        <origin xyz="0 -0.035 0" rpy="${PI/2} 0 0" />
+        <geometry>
+          <cylinder radius="0.085" length="0.06"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="wheel_front_left_joint" type="continuous">
+      <origin xyz="0 0.0485 -0.03125" rpy="0 0 0" />
+      <parent link="servo_front_left_link" />
+      <child link="wheel_front_left_link" />
+      <axis xyz="0 1 0" />
+      <xacro:wheel_limit />
+    </joint>
+
+    <link name="servo_front_right_link">
+      <inertial>
+        <!--origin xyz="-0.001 -0.0026 -0.03" rpy="0 0 0" /-->
+        <xacro:servo_inertia />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/servo_front_right_link.STL" />
+        </geometry>
+        <material name="robot" />
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/servo_front_right_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="servo_front_right_joint" type="revolute">
+      <origin xyz="-0.08581 -0.177 0.11625" rpy="0 0 0" />
+      <parent link="base_link" />
+      <child link="servo_front_right_link" />
+      <axis xyz="0 0 1" />
+      <xacro:servo_limit />
+    </joint>
+
+    <link name="wheel_front_right_link">
+      <inertial>
+        <origin xyz="0 0.03 0" rpy="0 0 0" />
+        <xacro:wheel_inertia />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://karbonite_gazebo/meshes/wheel_front_right_link.STL" />
+        </geometry>
+        <material name="wheel" />
+      </visual>
+      <collision>
+        <origin xyz="0 0.035 0" rpy="${PI/2} 0 0" />
+        <geometry>
+          <cylinder radius="0.085" length="0.06"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="wheel_front_right_joint" type="continuous">
+      <origin xyz="0 -0.0485 -0.03125" rpy="0 0 0" />
+      <parent link="servo_front_right_link" />
+      <child link="wheel_front_right_link" />
+      <axis xyz="0 1 0" />
+      <xacro:wheel_limit />
+    </joint>
+
+    <xacro:include filename="camera.xacro" />
+
+    <link name="${front_scan_name}">
+      <inertial>
+        <mass value="1e-5" />
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+        <material name="lidar"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+      </collision>
+    </link>
+    
+    <joint name="${front_scan_name}_joint" type="fixed">
+      <axis xyz="0 1 0" />
+      <origin xyz="0.06 0 0.15" rpy="0 0 0"/>
+      <parent link="base_link"/>
+      <child link="${front_scan_name}"/>
+    </joint>
+
+    <xacro:if value="${rear_lidar_activate == 1}">
+      <link name="${rear_scan_name}">
+        <inertial>
+          <mass value="1e-5" />
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+        </inertial>
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+            <box size="0.05 0.05 0.05"/>
+          </geometry>
+          <material name="lidar" />
+        </visual>
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+            <box size="0.05 0.05 0.05"/>
+          </geometry>
+        </collision>
+      </link>
+
+      <joint name="${rear_scan_name}_joint" type="fixed">
+        <axis xyz="0 1 0" />
+        <origin xyz="-0.57 0 0.15" rpy="0 0 3.14159265359"/>
+        <parent link="base_link"/>
+        <child link="${rear_scan_name}"/>
+      </joint>
+    </xacro:if>
+
+    <link name="gyro_link">
+      <inertial>
+        <mass value="1e-5" />
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+        <material name="gyro"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="gyro_joint"  type="fixed">
+      <origin xyz="-0.175 0.0 0.22" rpy="0 0 0"/>
+      <parent link="base_link"/>
+      <child link="gyro_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+
+    <!-- Include 360 degree lidar-->
+    <xacro:include filename="stabilisator.urdf" />
+
+</robot>
